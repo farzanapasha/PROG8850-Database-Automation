@@ -23,10 +23,10 @@ jobs:
 
     - name: 🔐 Set Environment Variables
       env:
-        MYSQL_HOST: ${{ secrets.DB_HOST }}
-        MYSQL_USER: ${{ secrets.DB_USER }}
-        MYSQL_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        MYSQL_DATABASE: ${{ secrets.DB_NAME }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_NAME: ${{ secrets.DB_NAME }}
       run: |
         echo "Running migration script..."
         python scripts/run_db_migration.py
