@@ -61,6 +61,11 @@ jobs:
           mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} project_db < sql/seed_data.sql
 
       - name: Concurrent Query Execution
+        env:    
+          DB_HOST: 127.0.0.1
+          DB_USER: developer
+          DB_PASSWORD: ${{ secrets.DATABASEPASSWORD }}
+          DB_NAME: project_db
         run: |
           python scripts/multi_thread_queries.py
 
