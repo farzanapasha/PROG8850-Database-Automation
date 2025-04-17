@@ -36,15 +36,15 @@ jobs:
           pip install -r requirements.txt
       - name: Initial Schema Deployment
         run: |
-          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/create_database.sql;"
+          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/create_database.sql;"
     
       - name: Schema Update
         run: |
-          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/schema_update.sql;"
+          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/schema_update.sql;"
 
       - name: Data Seeding
         run: |
-          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/seed_data.sql;"
+          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/seed_data.sql;"
 
       - name: Concurrent Query Execution
         run: |
@@ -52,4 +52,4 @@ jobs:
 
       - name: Validation Step
         run: |
-          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/validation.sql;"
+          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/validation.sql;"
