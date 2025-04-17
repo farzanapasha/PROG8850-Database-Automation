@@ -42,11 +42,18 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          # Wait for MySQL to be ready
-          until mysqladmin ping -h mysql -u developer -p${{ secrets.DATABASEPASSWORD }} > /dev/null 2>&1; do
+          timeout=60
+          counter=0
+          while ! mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "SELECT 1" >/dev/null 2>&1; do
+            sleep 1
+            counter=$((counter + 1))
+            if [ $counter -gt $timeout ]; then
+              echo "Timed out waiting for MySQL to start"
+              exit 1
+            fi
             echo "Waiting for MySQL to start..."
-            sleep 5
           done
+          echo "MySQL is ready!"
 
       - name: Initial Schema Deployment
         run: |
