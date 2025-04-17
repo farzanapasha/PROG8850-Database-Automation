@@ -19,9 +19,14 @@ jobs:
           - 3306:3306
         env:
           MYSQL_USER: developer
-          MYSQL_DATABASE: mysql
+          MYSQL_DATABASE: project_db
           MYSQL_PASSWORD: ${{ secrets.DATABASEPASSWORD }}
           MYSQL_ROOT_PASSWORD: ${{ secrets.ROOTPASSWORD }}
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -34,17 +39,26 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Wait for MySQL to be ready
+        run: |
+          # Wait for MySQL to be ready
+          until mysqladmin ping -h mysql -u developer -p${{ secrets.DATABASEPASSWORD }} > /dev/null 2>&1; do
+            echo "Waiting for MySQL to start..."
+            sleep 5
+          done
+
       - name: Initial Schema Deployment
         run: |
-          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/create_database.sql;"
+          mysql -h mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/create_database.sql;"
     
       - name: Schema Update
         run: |
-          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/schema_update.sql;"
+          mysql -h mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/schema_update.sql;"
 
       - name: Data Seeding
         run: |
-          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/seed_data.sql;"
+          mysql -h mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/seed_data.sql;"
 
       - name: Concurrent Query Execution
         run: |
@@ -52,4 +66,4 @@ jobs:
 
       - name: Validation Step
         run: |
-          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/validation.sql;"
+          mysql -h mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/validation.sql;"
