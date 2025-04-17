@@ -50,7 +50,7 @@ jobs:
     
       - name: Initial Schema Deployment
         run: |
-          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} project_db < sql/create_database.sql
+          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} project_db < sql/create_table.sql
     
       - name: Schema Update
         run: |
