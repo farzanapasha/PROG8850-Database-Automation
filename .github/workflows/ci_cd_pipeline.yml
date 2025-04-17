@@ -1,0 +1,55 @@
+name: "MySQL CI/CD Pipeline"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  container-job:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_USER: developer
+          MYSQL_DATABASE: mysql
+          MYSQL_PASSWORD: ${{ secrets.DATABASEPASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.ROOTPASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      # Install dependencies and necessary tools
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Initial Schema Deployment
+        run: |
+          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/create_database.sql;"
+    
+      - name: Schema Update
+        run: |
+          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/schema_update.sql;"
+
+      - name: Data Seeding
+        run: |
+          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/seed_data.sql;"
+
+      - name: Concurrent Query Execution
+        run: |
+          python scripts/multi_thread_queries.py
+
+      - name: Validation Step
+        run: |
+          mysql -u developer -p${{ secrets.DATABASEPASSWORD }} -e "source sql/validation.sql;"
