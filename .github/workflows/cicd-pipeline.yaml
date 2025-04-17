@@ -21,7 +21,7 @@ jobs:
     - name: 📦 Install Dependencies
       run: pip install -r requirements.txt
 
-    - name: 🔐 Set Environment Variables
+    - name: 🔐 Run the Database migration script
       env:
         DB_HOST: ${{ secrets.DB_HOST }}
         DB_USER: ${{ secrets.DB_USER }}
