@@ -1,0 +1,77 @@
+---
+- hosts: localhost
+  tasks:
+
+  - name: Remove cert-manager
+    kubernetes.core.helm:
+      name: cert-manager
+      release_namespace: default
+      state: absent
+      wait: true
+
+  # Remove OpenTelemetry Collector
+  - name: Remove OpenTelemetry Collector
+    kubernetes.core.k8s:
+      state: absent
+      src: "k8s/openTelemetryCollector.yml"
+
+  - name: Remove otel-collector-collector deployment
+    kubernetes.core.k8s:
+      state: absent
+      definition:
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: otel-collector-collector
+          namespace: default
+
+  - name: Remove OpenTelemetry Operator
+    kubernetes.core.helm:
+      name: opentelemetry-operator
+      release_namespace: default
+      state: absent
+      wait: true
+  
+  # Remove MySQL monitoring
+  - name: Remove MySQL Exporter deployment
+    kubernetes.core.k8s:
+      state: absent
+      src: "k8s/mysql-exporter-dep.yml"
+  
+  # Remove MySQL deployment
+  - name: Remove MySQL deployment
+    kubernetes.core.k8s:
+      state: absent
+      src: "k8s/mysql-deployment.yml"
+  
+  - name: Remove MySQL ConfigMap
+    kubernetes.core.k8s:
+      state: absent
+      definition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: mysql-init-scripts
+          namespace: default
+  
+  # Remove SigNoz
+  - name: Remove SigNoz k8s infrastructure
+    kubernetes.core.helm:
+      name: my-signoz-k8s-infra
+      release_namespace: default
+      state: absent
+      wait: false
+      atomic: false
+  
+  - name: Remove SigNoz
+    kubernetes.core.helm:
+      name: my-signoz
+      release_namespace: default
+      state: absent
+      wait: false
+      atomic: false
+  
+  - name: "Remove kubernetes python package"
+    pip:
+      name: kubernetes
+      state: absent

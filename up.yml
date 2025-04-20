@@ -1,0 +1,102 @@
+---
+- hosts: localhost
+  tasks:
+  - name: "Install kubernetes python package"
+    pip:
+      name: kubernetes
+      state: present
+  
+  # SigNoz Deployment
+  - name: Add signoz chart repo
+    kubernetes.core.helm_repository:
+      name: signoz
+      repo_url: "https://charts.signoz.io"
+
+  - name: Remove any existing SigNoz release
+    command: helm delete my-signoz --ignore-not-found
+    ignore_errors: yes
+
+  - name: Deploy latest version of signoz
+    kubernetes.core.helm:
+      name: my-signoz
+      chart_ref: signoz/signoz
+      release_namespace: default
+      create_namespace: true
+  
+  - name: Monitor k8s infrastructure with SigNoz
+    kubernetes.core.helm:
+      name: my-signoz-k8s-infra
+      chart_ref: signoz/k8s-infra
+      release_namespace: default
+      values:
+        otelCollectorEndpoint: my-signoz-otel-collector:4317
+  
+  # Install cert-manager (required for OpenTelemetry Operator)
+  - name: Add cert-manager repo
+    kubernetes.core.helm_repository:
+      name: jetstack
+      repo_url: "https://charts.jetstack.io"
+
+  - name: Install cert-manager
+    kubernetes.core.helm:
+      name: cert-manager
+      chart_ref: jetstack/cert-manager
+      release_namespace: default
+      values:
+        installCRDs: true
+      wait: true
+      timeout: 300s
+  
+  # Install OpenTelemetry Operator
+  - name: Install OpenTelemetry Operator
+    kubernetes.core.helm:
+      name: opentelemetry-operator
+      chart_ref: opentelemetry-operator
+      chart_repo_url: https://open-telemetry.github.io/opentelemetry-helm-charts
+      release_namespace: default
+      values:
+        manager:
+          collectorImage:
+            repository: otel/opentelemetry-collector-contrib
+            tag: latest
+      wait: true
+      timeout: 300s
+
+  
+  # MySQL Deployment - Using existing files
+  - name: Create MySQL ConfigMap from SQL scripts
+    kubernetes.core.k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: ConfigMap
+        metadata:
+          name: mysql-init-scripts
+          namespace: default
+        data:
+          "01-create_database.sql": "{{ lookup('file', 'sql/create_database.sql') }}"
+          "02-create_table.sql": "{{ lookup('file', 'sql/create_table.sql') }}"
+          "03-schema_update.sql": "{{ lookup('file', 'sql/schema_update.sql') }}"
+          "04-seed_data.sql": "{{ lookup('file', 'sql/seed_data.sql') }}"
+  
+  - name: Deploy MySQL using manifest file
+    kubernetes.core.k8s:
+      state: present
+      src: "k8s/mysql-deployment.yml"
+  
+  # MySQL Monitoring - Using existing files
+  - name: Deploy MySQL Exporter using manifest file
+    kubernetes.core.k8s:
+      state: present
+      src: "k8s/mysql-exporter-dep.yml"
+  
+
+
+  # Deploy OpenTelemetry Collector
+  - name: Deploy OpenTelemetry Collector
+    kubernetes.core.k8s:
+      state: present
+      src: "k8s/openTelemetryCollector.yml"
+  
+  
+

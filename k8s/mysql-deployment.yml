@@ -1,0 +1,61 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+      annotations:
+        signoz.io/scrape: "true" 
+        signoz.io/service.name: "mysql-database"
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        # Remove the custom command - let MySQL handle initialization
+        ports:
+        - containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: Secret8960392 
+        - name: MYSQL_DATABASE
+          value: project_db
+        - name: MYSQL_USER
+          value: developer
+        - name: MYSQL_PASSWORD
+          value: Secret8960392
+        volumeMounts:
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+        - name: mysql-data
+          mountPath: /var/lib/mysql  
+      volumes:
+      - name: init-scripts
+        configMap:
+          name: mysql-init-scripts
+      - name: mysql-data
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: default
+spec:
+  selector:
+    app: mysql
+  ports:
+  - port: 3306
+    targetPort: 3306
+  type: ClusterIP
+
+
+---

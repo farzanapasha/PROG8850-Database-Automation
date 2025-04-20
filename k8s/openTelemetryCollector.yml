@@ -1,0 +1,91 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: otel-collector
+  namespace: default
+  labels:
+    app: otel-collector
+spec:
+  mode: deployment
+  config: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus:
+        config:
+          scrape_configs:
+            # Self-scraping for the collector itself
+            - job_name: otel-collector
+              static_configs:
+                - targets:
+                    - localhost:8888
+                  labels:
+                    job_name: otel-collector
+            # MySQL metrics scraping
+            - job_name: mysql-metrics
+              static_configs:
+                - targets:
+                    - mysql-exporter.default.svc.cluster.local:9104
+                  labels:
+                    service.name: mysql
+                    app: mysql-exporter
+                    service.namespace: default
+                    telemetry.sdk.name: prometheus
+      sqlquery:
+        driver: mysql
+        datasource: "root:Secret8960392@tcp(mysql:3306)/project_db"
+        queries:
+          - sql: "select avg(temperature) as avg_temp, location from ClimateData group by location"
+            metrics:
+              - metric_name: temperature_average
+                value_column: "avg_temp"
+                attribute_columns: ["location"]
+
+    processors:
+      batch:
+        timeout: 10s
+        send_batch_size: 1024
+        send_batch_max_size: 1024
+      memory_limiter:
+        check_interval: 5s
+        limit_mib: 1800
+        spike_limit_mib: 500
+      resource:
+        attributes:
+          - action: insert
+            key: service.name
+            value: mysql
+
+    exporters:
+      otlp:
+        endpoint: "my-signoz-otel-collector.default.svc.cluster.local:4317"
+        tls:
+          insecure: true
+
+    service:
+      telemetry:
+        logs:
+          encoding: json
+        metrics:
+          address: 0.0.0.0:8888
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlp]
+        metrics:
+          receivers: [otlp, sqlquery]
+          processors: [memory_limiter, batch]
+          exporters: [otlp]
+        metrics/prometheus:
+          receivers: [prometheus]
+          processors: [resource, memory_limiter, batch]
+          exporters: [otlp]
+        logs:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [otlp]
