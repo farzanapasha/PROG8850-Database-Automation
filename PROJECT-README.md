@@ -1,4 +1,4 @@
-# MySQL Database CI/CD Pipeline with Performance Monitoring
+# End-to End Automated Database Management with Advanced Monitoring
 
 ## Overview
 This project implements a Continuous Integration and Continuous Deployment (CI/CD) pipeline using GitHub Actions for automating MySQL database schema changes and deployments. The goal is to create a robust pipeline that ensures smooth deployment, concurrent query execution, and query performance optimization. 
