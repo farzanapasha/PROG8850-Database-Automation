@@ -27,13 +27,13 @@ Before running this project, ensure that you have the following installed:
    cd mysql-cicd-performance
 
 2. **Set up MySQL database**:
-    Ensure you have a MySQL server running.
-    Create a ClimateData table or update the schema as needed.
+    - Ensure you have a MySQL server running.
+    - Create a ClimateData table or update the schema as needed.
 
 3. **Configure GitHub Actions**:
-    Set up a .github/workflows/ci_cd_pipeline.yml file in your repository with the necessary steps for schema deployment, query execution, and performance optimizations.
+    - Set up a .github/workflows/ci_cd_pipeline.yml file in your repository with the necessary steps for schema deployment, query execution, and performance optimizations.
 
 4. **Configure Signoz**:
-    Set up Signoz for real-time performance monitoring.
-    Integrate with MySQL to gather metrics on query performance and system resource usage.
+    - Set up Signoz for real-time performance monitoring.
+    - Integrate with MySQL to gather metrics on query performance and system resource usage.
 
