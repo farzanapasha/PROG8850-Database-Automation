@@ -72,3 +72,11 @@ jobs:
       - name: Validation Step
         run: |
           mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} project_db < sql/validation.sql
+
+      - name: Optimize Table for performance improvement.
+        run: |
+          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} project_db < sql/table_optimization.sql
+
+      - name: Validation Ater Optimization 
+        run: |
+          mysql -h 127.0.0.1 -u developer -p${{ secrets.DATABASEPASSWORD }} project_db < sql/validation.sql
