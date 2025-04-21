@@ -1,9 +1,7 @@
 # End-to End Automated Database Management with Advanced Monitoring
 
 ## Overview
-This project implements a Continuous Integration and Continuous Deployment (CI/CD) pipeline using GitHub Actions for automating MySQL database schema changes and deployments. The goal is to create a robust pipeline that ensures smooth deployment, concurrent query execution, and query performance optimization. 
-
-Additionally, the project integrates advanced monitoring and logging using **Signoz**, a platform that provides real-time insights into database performance, including CPU usage, slow queries, and other critical metrics. This allows for continuous performance analysis to detect bottlenecks and optimize SQL queries for better resource utilization and response time.
+This assignment implements a Continuous Integration and Continuous Deployment (CI/CD) pipeline using GitHub Actions for automating MySQL database schema changes and deployments. The goal is to create a robust pipeline that ensures smooth deployment, concurrent query execution, and query performance optimization. Additionally, the project integrates advanced monitoring and logging using **Signoz**, a platform that provides real-time insights into database performance, including CPU usage, slow queries, and other critical metrics. This allows for continuous performance analysis to detect bottlenecks and optimize SQL queries for better resource utilization and response time.
 
 ## Features
 - **CI/CD Pipeline**: Automates MySQL schema changes and deployment using GitHub Actions.
